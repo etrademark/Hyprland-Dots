@@ -1,8 +1,9 @@
 #!/bin/bash
+tmux start-server
 
 ### Variables
-defaultHelper='paru'
 installDir="$HOME/temp"
+mkdir -p $installDir/logs
 
 # ANSI Color codes
 RESET='\e[0m'
@@ -10,6 +11,7 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 LIGHT_YELLOW='\e[38;5;229m'
 ORANGE='\e[38;5;214m'
+CYAN='\033[0;36m'
 WARNING="${YELLOW}[${ORANGE}!${YELLOW}]${LIGHT_YELLOW} "
 ERROR="${RED}[${ORANGE}!${RED}] "
 NOTE="${LIGHT_YELLOW}[${RESET}!${LIGHT_YELLOW}]${RESET} "
@@ -31,7 +33,7 @@ cancel() {
 }
 
 printf "${NOTE}Installing required packages and setting up permissions.\n"
-sudo pacman -Sy --noconfirm --needed base-devel cargo git dmidecode
+sudo pacman -Sy --noconfirm --needed base-devel cargo git tmux
 
 installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Choose options to install or configure" 15 100 5 \
   "zsh-powerlevel10k" "Configure and change shell to zsh with powerlevel10k theming" off \
@@ -42,8 +44,12 @@ installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Ch
   2>&1 >/dev/tty)
 cancel
 
-if [ $(sudo dmidecode -s system-manufacturer) = "ASUSTeK COMPUTER INC." ]; then
-  rog=$(whiptail --title "ROG" --yesno "You seem to have a ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for asus laptops)?" 15 50 2)
+echo $installOptions
+
+if $(hostnamectl | grep -q "ASUSTeK COMPUTER INC."); then
+  if $(hostnamectl) | grep -q "Laptop"; then
+    rog=$(whiptail --title "ROG" --yesno "You seem to have a ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for ROG and TUF laptops)?" 15 50)
+  fi
 fi
 
 if [ "$noHelper" = true ]; then
@@ -56,9 +62,14 @@ if [ "$noHelper" = true ]; then
 
   helper=$aurHelper
 
-  git clone https://aur.archlinux.org/$helper.git $installDir/$helper
+  printf "${NOTE}Installing AUR Helper ${helper}.\n"
+  git clone "https://aur.archlinux.org/${helper}-bin.git" $installDir/$helper
   cd $installDir/$helper
-  makepkg -si --noconfirm
+  makepkg -si --noconfirm >"$installDir/logs/$helper.log" 2>&1
+  if [ $? -ne 0 ]; then
+    printf "${ERROR}Failed to install ${helper}. Check the log in ${CYAN}$installDir/logs/${HELPER}.log${RESET}\n"
+  fi
+
   cd .. && rm -rf $installDir/$helper
 fi
 
