@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 WARNING="${YELLOW}[${ORANGE}!${YELLOW}]${LIGHT_YELLOW} "
 ERROR="${RED}[${ORANGE}!${RED}] "
 NOTE="${LIGHT_YELLOW}[${RESET}!${LIGHT_YELLOW}]${RESET} "
-printf "${WARNING}This script is still in development. Please use with caution.${RESET}\n"
+printf "${WARNING}This script is still in development. Please use it with caution.${RESET}\n"
 
 if hash paru 2>/dev/null; then
   helper='paru'
@@ -48,7 +48,7 @@ echo $installOptions
 
 if $(hostnamectl | grep -q "ASUSTeK COMPUTER INC."); then
   if $(hostnamectl) | grep -q "Laptop"; then
-    rog=$(whiptail --title "ROG" --yesno "You seem to have a ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for ROG and TUF laptops)?" 15 50)
+    rog=$(whiptail --title "ROG" --yesno "You seem to have an ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for ROG and TUF laptops)?" 15 50)
   fi
 fi
 
@@ -62,7 +62,7 @@ if [ "$noHelper" = true ]; then
 
   helper=$aurHelper
 
-  printf "${NOTE}Installing AUR Helper ${helper}.\n"
+  printf "${NOTE}Installing the AUR Helper ${helper}.\n"
   git clone "https://aur.archlinux.org/${helper}-bin.git" $installDir/$helper
   cd $installDir/$helper
   makepkg -si --noconfirm >"$installDir/logs/$helper.log" 2>&1
