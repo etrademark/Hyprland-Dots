@@ -5,6 +5,10 @@ tmux start-server
 installDir="$HOME/temp"
 mkdir -p $installDir/logs
 
+powerlevel10k="zsh"
+hyprland="hyprland kitty thunar blueman networkmanager network-manager-applet pulseaudio pavucontrol alsa-firmware cava btop waybar"
+lazyvim="neovim ripgrep stylua lua51 luarocks hererocks fd lazygit fzf ghostscript"
+
 # ANSI Color codes
 RESET='\e[0m'
 RED='\033[0;31m'
@@ -33,10 +37,10 @@ cancel() {
 }
 
 printf "${NOTE}Installing required packages and setting up permissions.\n"
-sudo pacman -Sy --noconfirm --needed base-devel cargo git tmux
+sudo pacman -Sy --noconfirm --needed base-devel cargo git wget curl unzip
 
 installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Choose options to install or configure" 15 100 5 \
-  "zsh-powerlevel10k" "Configure and change shell to zsh with powerlevel10k theming" off \
+  "zim-powerlevel10k" "Configure and change shell to zsh (+ zim) with powerlevel10k theming" off \
   "lazyvim" "Install LazyVim and neovim text editor (command: nvim)" off \
   "hyprland" "Plain Hyprland without dotfiles (unless previously configured)" off \
   "dotfiles" "Configure Hyprland with etrademark's dotfiles" off \
@@ -73,5 +77,40 @@ if [ "$noHelper" = true ]; then
   cd .. && rm -rf $installDir/$helper
 fi
 
-$helper -Sy --noconfirm hyprland wget curl kitty unzip
-$helper -Sy --noconfirm ripgrep stylua lua51 luarocks hererocks fd lazygit fzf ghostscript
+if [[ ! $installOptions == *"zim-powerlevel10k"* ]]; then
+  powerlevel10k=null
+else
+  printf "${NOTE}zsh and powerlevel10k will be installed.\n"
+fi
+
+if [[ ! $installOptions == *"hyprland"* ]]; then
+  hyprland=null
+else
+  printf "${NOTE}Hyprland will be installed.\n"
+fi
+
+if [[ ! $installOptions == *"lazyvim"* ]]; then
+  lazyvim=null
+else
+  printf "${NOTE}LazyVim will be installed.\n"
+fi
+
+$helper -Sy --noconfirm --needed $powerlevel10k $hyprland $lazyvim
+
+# Poorly written script by me (;
+if [ -n "$lazyvim" ]; then
+  printf "${NOTE}Installing LazyVim.\n"
+  curl -sL https://raw.githubusercontent.com/etrademark/lazyvim/master/install.sh | bash
+fi
+
+if [ -n "$powerlevel10k" ]; then
+  printf "${NOTE}Setting up zsh, zim and powerlevel10k.\n"
+  zsh
+
+  chsh -s /usr/bin/zsh
+  if ! hash zimfw 2>/dev/null; then
+    curl -fsSL https://raw.githubusercontent.com/zimfw/install/master/install.zsh | zsh
+  fi
+  echo "zmodule romkatv/powerlevel10k --use degit" >>$HOME/.zimrc
+  zimfw install
+fi
