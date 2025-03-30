@@ -6,7 +6,8 @@ installDir="$HOME/temp"
 mkdir -p $installDir/logs
 
 powerlevel10k="zsh"
-hyprland="hyprland kitty thunar blueman networkmanager network-manager-applet pulseaudio pavucontrol alsa-firmware cava btop waybar"
+hyprland="hyprland noto-fonts kitty"
+dotfiles="thunar blueman networkmanager network-manager-applet pulseaudio pavucontrol alsa-firmware cava btop waybar"
 lazyvim="neovim ripgrep stylua lua51 luarocks hererocks fd lazygit fzf ghostscript"
 
 # ANSI Color codes
@@ -15,10 +16,11 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 LIGHT_YELLOW='\e[38;5;229m'
 ORANGE='\e[38;5;214m'
-CYAN='\033[0;36m'
-WARNING="${YELLOW}[${ORANGE}!${YELLOW}]${LIGHT_YELLOW} "
-ERROR="${RED}[${ORANGE}!${RED}] "
-NOTE="${LIGHT_YELLOW}[${RESET}!${LIGHT_YELLOW}]${RESET} "
+CYAN='\033[0;36m' # Directories
+WARNING=" - ${YELLOW}[${ORANGE}!${YELLOW}]${LIGHT_YELLOW} "
+ERROR=" - ${RED}[${ORANGE}!${RED}] "
+NOTE=" - ${LIGHT_YELLOW}[${RESET}!${LIGHT_YELLOW}]${RESET} "
+IMPORTANT=" - ${RESET}{${CYAN}IMPORTANT${RESET}}${YELLOW} "
 printf "${WARNING}This script is still in development. Please use it with caution.${RESET}\n"
 
 if hash paru 2>/dev/null; then
@@ -36,6 +38,13 @@ cancel() {
   fi
 }
 
+### Mildly distructive!!! Fix later
+if [ -d $installDir ]; then
+  whiptail --title "Hyprland-Dots" --yesno "Continuing will remove ${installDir}. Are you sure you want to continue?" 15 50
+  rm -rf $installDir
+  cancel
+fi
+
 printf "${NOTE}Installing required packages and setting up permissions.\n"
 sudo pacman -Sy --noconfirm --needed base-devel cargo git wget curl unzip
 
@@ -44,7 +53,7 @@ installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Ch
   "lazyvim" "Install LazyVim and neovim text editor (command: nvim)" off \
   "hyprland" "Plain Hyprland without dotfiles (unless previously configured)" off \
   "dotfiles" "Configure Hyprland with etrademark's dotfiles" off \
-  "languages" "Install some additional programming languages" off \
+  "languages" "Install some additional programming languages and developer tools" off \
   2>&1 >/dev/tty)
 cancel
 
@@ -80,37 +89,53 @@ fi
 if [[ ! $installOptions == *"zim-powerlevel10k"* ]]; then
   powerlevel10k=null
 else
+
+  # --- ZSH ---
+  # folder name for downloads and backups are ALWAYS zsh
+  # --- --- ----
+
   printf "${NOTE}zsh and powerlevel10k will be installed.\n"
+  printf "${NOTE}Setting up zsh, zim and powerlevel10k.\n"
+
+  #chsh -s /usr/bin/zsh
+  if ! hash zimfw 2>/dev/null; then
+    curl -fsSL --create-dirs -o ~/.zim/zimfw.zsh \
+      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+  fi
+  printf "${WARNING}Creating backups of your existing shell config files in ${CYAN}~/${installDir}/backups${RESET}"
+  mkdir -p $installDir/backups/zsh
+  mv ${HOME}/.zshrc $installDir/backups/zsh/.zshrc
+  mv ${HOME}/.zim $installDir/backups/zsh/.zim
+  mv ${HOME}/.zimrc $installDir/backups/zsh/.zimrc
+
+  cp -r $installDir/zsh/* ${HOME}
 fi
 
-if [[ ! $installOptions == *"hyprland"* ]]; then
-  hyprland=null
-else
-  printf "${NOTE}Hyprland will be installed.\n"
-fi
+function hyprland() {
+  if [[ ! $installOptions == *"hyprland"* ]]; then
+    if [[ ! $installOptions == *"dotfiles"* ]]; then
+      hyprland="null"
+      dotfiles="null"
+      return
+    fi
+    printf "${NOTE}Hyprland with dotfiles will be installed.\n${WARNING}You did not select to install Hyprland, however you have selected to install dotfiles, so Hyprland will be installed anyway.${RESET}\n"
+  elif [[ $installOptions == *"dotfiles"* ]]; then
+    printf "${NOTE}Hyprland with dotfiles will be installed.\n"
+  else
+    printf "${NOTE}Hyprland will be installed.\n ${IMPORTANT}Note: This installs the bare minimum to run Hyprland. If you want to use it, you will need to install additional packages and configure it. Kitty will still be installed.${RESET}\n"
+  fi
+}
+hyprland
 
 if [[ ! $installOptions == *"lazyvim"* ]]; then
-  lazyvim=null
+  lazyvim="null"
 else
   printf "${NOTE}LazyVim will be installed.\n"
 fi
 
 $helper -Sy --noconfirm --needed $powerlevel10k $hyprland $lazyvim
 
-# Poorly written script by me (;
 if [ -n "$lazyvim" ]; then
   printf "${NOTE}Installing LazyVim.\n"
   curl -sL https://raw.githubusercontent.com/etrademark/lazyvim/master/install.sh | bash
-fi
-
-if [ -n "$powerlevel10k" ]; then
-  printf "${NOTE}Setting up zsh, zim and powerlevel10k.\n"
-  zsh
-
-  chsh -s /usr/bin/zsh
-  if ! hash zimfw 2>/dev/null; then
-    curl -fsSL https://raw.githubusercontent.com/zimfw/install/master/install.zsh | zsh
-  fi
-  echo "zmodule romkatv/powerlevel10k --use degit" >>$HOME/.zimrc
-  zimfw install
 fi
