@@ -1,5 +1,4 @@
 #!/bin/bash
-tmux start-server
 
 ### Variables
 installDir="$HOME/temp"
@@ -8,7 +7,7 @@ mkdir -p $installDir/logs
 powerlevel10k="zsh"
 hyprland="hyprland noto-fonts kitty"
 dotfiles="thunar blueman networkmanager network-manager-applet pulseaudio pavucontrol alsa-firmware cava btop waybar"
-lazyvim="neovim ripgrep stylua lua51 luarocks hererocks fd lazygit fzf ghostscript"
+lazyvim="neovim nodejs npm ripgrep stylua lua51 luarocks hererocks fd lazygit fzf ghostscript"
 
 # ANSI Color codes
 RESET='\e[0m'
@@ -41,7 +40,8 @@ cancel() {
 ### Mildly distructive!!! Fix later
 if [ -d $installDir ]; then
   whiptail --title "Hyprland-Dots" --yesno "Continuing will remove ${installDir}. Are you sure you want to continue?" 15 50
-  rm -rf $installDir
+  chmod +w $installDir
+  sudo rm -rf $installDir
   cancel
 fi
 
@@ -87,7 +87,7 @@ if [ "$noHelper" = true ]; then
 fi
 
 if [[ ! $installOptions == *"zim-powerlevel10k"* ]]; then
-  powerlevel10k=null
+  powerlevel10k=""
 else
 
   # --- ZSH ---
@@ -102,19 +102,19 @@ else
     curl -fsSL --create-dirs -o ~/.zim/zimfw.zsh \
       https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
   fi
-  printf "${WARNING}Creating backups of your existing shell config files in ${CYAN}~/${installDir}/backups${RESET}"
-  mkdir -p $installDir/backups/zsh
-  mv ${HOME}/.zshrc $installDir/backups/zsh/.zshrc
-  mv ${HOME}/.zim $installDir/backups/zsh/.zim
-  mv ${HOME}/.zimrc $installDir/backups/zsh/.zimrc
+  printf "${WARNING}Creating backups of your existing shell config files in {$CYAN}${HOME}${RESET} ending with ${CYAN}.bak${RESET}"
+  sudo mv $HOME/.zshrc $HOME/.zshrc.bak
+  mv $HOME/.zim $HOME/.zim.bak
+  mv $HOME/.zimrc $HOME/.zimrc.bak
 
-  cp -r $installDir/zsh/* ${HOME}
+  echo debugtest
+  cp -r ./.z* ${HOME}
 fi
 
 function hyprland() {
   if [[ ! $installOptions == *"hyprland"* ]]; then
     if [[ ! $installOptions == *"dotfiles"* ]]; then
-      hyprland="null"
+      hyprland=""
       dotfiles="null"
       return
     fi
@@ -127,15 +127,27 @@ function hyprland() {
 }
 hyprland
 
-if [[ ! $installOptions == *"lazyvim"* ]]; then
-  lazyvim="null"
+if [[ ! $installoptions == *"lazyvim"* ]]; then
+  lazyvim=""
 else
   printf "${NOTE}LazyVim will be installed.\n"
 fi
 
 $helper -Sy --noconfirm --needed $powerlevel10k $hyprland $lazyvim
 
-if [ -n "$lazyvim" ]; then
+if [[ ! $installoptions == *"lazyvim"* ]]; then
   printf "${NOTE}Installing LazyVim.\n"
-  curl -sL https://raw.githubusercontent.com/etrademark/lazyvim/master/install.sh | bash
+  git clone https://github.com/LazyVim/starter ~/.config/nvim
+  if [[ ! $? = 1 ]]; then
+    echo -e "${ERROR}Failed to install LazyVim, config files may exist."
+    lazyvimfail=true
+  fi
+fi
+
+if [ lazyvimfail ]; then
+  read -p "${NOTE}LazyVim failed to install. Do you want to move the configs from ${CYAN}~/.config/nvim${RESET} to ${CYAN}~/.config/nvim.bak${RESET} and start clean? (Y/n)" lazy
+  if [[ ! lazy = [Nn] ]]; then #incorrect if statement
+    echo 'mv ~/.config/nvim ~/.config/nvim.bak'
+    mv ~/.config/nvim ~/.config/nvim.bak
+  fi
 fi
