@@ -4,7 +4,7 @@
 installDir="$HOME/temp"
 mkdir -p $installDir/logs
 
-powerlevel10k="zsh"
+zsh="zsh"
 hyprland="hyprland noto-fonts kitty"
 dotfiles="thunar blueman networkmanager network-manager-applet pulseaudio pavucontrol alsa-firmware cava btop waybar"
 lazyvim="neovim nodejs npm ripgrep stylua lua51 luarocks hererocks fd lazygit fzf ghostscript"
@@ -45,9 +45,6 @@ if [ -d $installDir ]; then
   cancel
 fi
 
-echo -e "${NOTE}Installing required packages and setting up permissions.\n"
-sudo pacman -Sy --noconfirm --needed base-devel cargo git wget curl unzip
-
 installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Choose options to install or configure" 15 100 5 \
   "zim-powerlevel10k" "Configure and change shell to zsh (+ zim) with powerlevel10k theming" off \
   "lazyvim" "Install LazyVim and neovim text editor (command: nvim)" off \
@@ -59,11 +56,11 @@ cancel
 
 echo $installOptions
 
-if [[ $(hostnamectl = *"ASUSTeK COMPUTER INC."*); then
-  if [[ $(hostnamectl) = *[Ll]"aptop"* ]]; then
-    rog=$(whiptail --title "ROG" --yesno "You seem to have an ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for ROG and TUF laptops)?" 15 50)
-  fi
-fi
+#if [ $(hostnamectl = *"ASUSTeK COMPUTER INC."*) ]; then
+#  if [[ $(hostnamectl) = *[Ll]"aptop"* ]]; then
+#    rog=$(whiptail --title "ROG" --yesno "You seem to have an ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for ROG and TUF laptops)?" 15 50)
+#  fi
+#fi
 
 if [ "$noHelper" = true ]; then
   aurHelper=$(whiptail --title "AUR Helper not installed." --radiolist \
@@ -86,8 +83,11 @@ if [ "$noHelper" = true ]; then
   cd .. && rm -rf $installDir/$helper
 fi
 
+echo -e "${NOTE}Installing required packages and setting up permissions.\n"
+sudo pacman -Sy --noconfirm --needed base-devel cargo git wget curl unzip
+
 if [[ ! $installOptions == *"zim-powerlevel10k"* ]]; then
-  powerlevel10k=""
+  zsh=""
 else
 
   # --- ZSH ---
@@ -115,7 +115,7 @@ function hyprland() {
   if [[ ! $installOptions == *"hyprland"* ]]; then
     if [[ ! $installOptions == *"dotfiles"* ]]; then
       hyprland=""
-      dotfiles="null"
+      dotfiles=""
       return
     fi
     echo -e "${NOTE}Hyprland with dotfiles will be installed.\n${WARNING}You did not select to install Hyprland, however you have selected to install dotfiles, so Hyprland will be installed anyway.${RESET}\n"
@@ -133,21 +133,22 @@ else
   echo -e "${NOTE}LazyVim will be installed.\n"
 fi
 
-$helper -Sy --noconfirm --needed $powerlevel10k $hyprland $lazyvim
+$helper -Sy --noconfirm --needed zsh $hyprland $dotfiles $lazyvim $zsh
 
 if [[ ! $installoptions == *"lazyvim"* ]]; then
   echo -e "${NOTE}Installing LazyVim.\n"
   git clone https://github.com/LazyVim/starter ~/.config/nvim
-  if [[ ! $? = 1 ]]; then
-    echo -e "${ERROR}Failed to install LazyVim, config files may exist."
-    lazyvimfail=true
-  fi
+  #if [[ ! $? = 1 ]]; then
+  #  echo -e "${ERROR}Failed to install LazyVim, config files may exist."
+  #  lazyvimfail=true
+  #fi
 fi
 
-if [ lazyvimfail ]; then
+if [ $lazyvimfail ]; then
   read -p "${NOTE}LazyVim failed to install. Do you want to move the configs from ${CYAN}~/.config/nvim${RESET} to ${CYAN}~/.config/nvim.bak${RESET} and start clean? (Y/n)" lazy
   if [[ ! lazy = [Nn] ]]; then #incorrect if statement
     echo 'mv ~/.config/nvim ~/.config/nvim.bak'
     mv ~/.config/nvim ~/.config/nvim.bak
+    git clone https://github.com/LazyVim/starter ~/.config/nvim
   fi
 fi
