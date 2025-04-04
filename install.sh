@@ -20,7 +20,7 @@ WARNING=" - ${YELLOW}[${ORANGE}!${YELLOW}]${LIGHT_YELLOW} "
 ERROR=" - ${RED}[${ORANGE}!${RED}] "
 NOTE=" - ${LIGHT_YELLOW}[${RESET}!${LIGHT_YELLOW}]${RESET} "
 IMPORTANT=" - ${RESET}{${CYAN}IMPORTANT${RESET}}${YELLOW} "
-printf "${WARNING}This script is still in development. Please use it with caution.${RESET}\n"
+echo -e "${WARNING}This script is still in development. Please use it with caution.${RESET}\n"
 
 if hash paru 2>/dev/null; then
   helper='paru'
@@ -32,7 +32,7 @@ fi
 
 cancel() {
   if [[ $? = 1 || $? = 255 ]]; then
-    printf "${RED}User canceled, stopping...${RESET}\n"
+    echo -e "${RED}User canceled, stopping...${RESET}\n"
     exit 1
   fi
 }
@@ -45,7 +45,7 @@ if [ -d $installDir ]; then
   cancel
 fi
 
-printf "${NOTE}Installing required packages and setting up permissions.\n"
+echo -e "${NOTE}Installing required packages and setting up permissions.\n"
 sudo pacman -Sy --noconfirm --needed base-devel cargo git wget curl unzip
 
 installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Choose options to install or configure" 15 100 5 \
@@ -59,8 +59,8 @@ cancel
 
 echo $installOptions
 
-if $(hostnamectl | grep -q "ASUSTeK COMPUTER INC."); then
-  if $(hostnamectl) | grep -q "Laptop"; then
+if [[ $(hostnamectl = *"ASUSTeK COMPUTER INC."*); then
+  if [[ $(hostnamectl) = *[Ll]"aptop"* ]]; then
     rog=$(whiptail --title "ROG" --yesno "You seem to have an ASUS device.\nDo you want to install asus-linux and supergfxctl (recommended for ROG and TUF laptops)?" 15 50)
   fi
 fi
@@ -75,12 +75,12 @@ if [ "$noHelper" = true ]; then
 
   helper=$aurHelper
 
-  printf "${NOTE}Installing the AUR Helper ${helper}.\n"
+  echo -e "${NOTE}Installing the AUR Helper ${helper}.\n"
   git clone "https://aur.archlinux.org/${helper}-bin.git" $installDir/$helper
   cd $installDir/$helper
   makepkg -si --noconfirm >"$installDir/logs/$helper.log" 2>&1
   if [ $? -ne 0 ]; then
-    printf "${ERROR}Failed to install ${helper}. Check the log in ${CYAN}$installDir/logs/${HELPER}.log${RESET}\n"
+    echo -e "${ERROR}Failed to install ${helper}. Check the log in ${CYAN}$installDir/logs/${HELPER}.log${RESET}\n"
   fi
 
   cd .. && rm -rf $installDir/$helper
@@ -94,15 +94,15 @@ else
   # folder name for downloads and backups are ALWAYS zsh
   # --- --- ----
 
-  printf "${NOTE}zsh and powerlevel10k will be installed.\n"
-  printf "${NOTE}Setting up zsh, zim and powerlevel10k.\n"
+  echo -e "${NOTE}zsh and powerlevel10k will be installed.\n"
+  echo -e "${NOTE}Setting up zsh, zim and powerlevel10k.\n"
 
   #chsh -s /usr/bin/zsh
   if ! hash zimfw 2>/dev/null; then
     curl -fsSL --create-dirs -o ~/.zim/zimfw.zsh \
       https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
   fi
-  printf "${WARNING}Creating backups of your existing shell config files in {$CYAN}${HOME}${RESET} ending with ${CYAN}.bak${RESET}"
+  echo -e "${WARNING}Creating backups of your existing shell config files in {$CYAN}${HOME}${RESET} ending with ${CYAN}.bak${RESET}"
   sudo mv $HOME/.zshrc $HOME/.zshrc.bak
   mv $HOME/.zim $HOME/.zim.bak
   mv $HOME/.zimrc $HOME/.zimrc.bak
@@ -118,11 +118,11 @@ function hyprland() {
       dotfiles="null"
       return
     fi
-    printf "${NOTE}Hyprland with dotfiles will be installed.\n${WARNING}You did not select to install Hyprland, however you have selected to install dotfiles, so Hyprland will be installed anyway.${RESET}\n"
+    echo -e "${NOTE}Hyprland with dotfiles will be installed.\n${WARNING}You did not select to install Hyprland, however you have selected to install dotfiles, so Hyprland will be installed anyway.${RESET}\n"
   elif [[ $installOptions == *"dotfiles"* ]]; then
-    printf "${NOTE}Hyprland with dotfiles will be installed.\n"
+    echo -e "${NOTE}Hyprland with dotfiles will be installed.\n"
   else
-    printf "${NOTE}Hyprland will be installed.\n ${IMPORTANT}Note: This installs the bare minimum to run Hyprland. If you want to use it, you will need to install additional packages and configure it. Kitty will still be installed.${RESET}\n"
+    echo -e "${NOTE}Hyprland will be installed.\n ${IMPORTANT}Note: This installs the bare minimum to run Hyprland. If you want to use it, you will need to install additional packages and configure it. Kitty will still be installed.${RESET}\n"
   fi
 }
 hyprland
@@ -130,13 +130,13 @@ hyprland
 if [[ ! $installoptions == *"lazyvim"* ]]; then
   lazyvim=""
 else
-  printf "${NOTE}LazyVim will be installed.\n"
+  echo -e "${NOTE}LazyVim will be installed.\n"
 fi
 
 $helper -Sy --noconfirm --needed $powerlevel10k $hyprland $lazyvim
 
 if [[ ! $installoptions == *"lazyvim"* ]]; then
-  printf "${NOTE}Installing LazyVim.\n"
+  echo -e "${NOTE}Installing LazyVim.\n"
   git clone https://github.com/LazyVim/starter ~/.config/nvim
   if [[ ! $? = 1 ]]; then
     echo -e "${ERROR}Failed to install LazyVim, config files may exist."
