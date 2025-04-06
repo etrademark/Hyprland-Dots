@@ -3,7 +3,7 @@
 DIR="$HOME/.config/hypr/Configs/"
 
 files="animations.conf\nkeybinds.conf\nsettings.conf\nstartup.conf\nwindowRules.conf"
-selected=$(echo -e "$files" | rofi -dmenu -p "Select file:")
+selected=$(echo -e "$files" | rofi -dmenu -p "Select file")
 textEditor="nvim"
 
 if [ -n "$selected" ]; then
