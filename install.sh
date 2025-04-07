@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ### Variables
-installDir="$HOME/temp"
-mkdir -p $installDir/logs
+installDir="./output"
+mkdir -p "$installDir/logs"
 
 zsh="zsh"
 hyprland="hyprland noto-fonts kitty"
@@ -54,7 +54,7 @@ installOptions=$(whiptail --title "Hyprland-Dots install script" --checklist "Ch
   2>&1 >/dev/tty)
 cancel
 
-echo $installOptions
+echo "${installOptions}"
 
 #if [ $(hostnamectl = *"ASUSTeK COMPUTER INC."*) ]; then
 #  if [[ $(hostnamectl) = *[Ll]"aptop"* ]]; then
@@ -73,14 +73,14 @@ if [ "$noHelper" = true ]; then
   helper=$aurHelper
 
   echo -e "${NOTE}Installing the AUR Helper ${helper}.\n"
-  git clone "https://aur.archlinux.org/${helper}-bin.git" $installDir/$helper
-  cd $installDir/$helper
+  git clone "https://aur.archlinux.org/${helper}-bin.git" "${installDir}/${helper}"
+  cd "${installDir}/${helper}" || echo -e "${ERROR}Something went wrong. Check your internet connection and try again."
   makepkg -si --noconfirm >"$installDir/logs/$helper.log" 2>&1
   if [ $? -ne 0 ]; then
     echo -e "${ERROR}Failed to install ${helper}. Check the log in ${CYAN}$installDir/logs/${HELPER}.log${RESET}\n"
   fi
 
-  cd .. && rm -rf $installDir/$helper
+  cd .. && rm -rf ${helper}
 fi
 
 echo -e "${NOTE}Installing required packages and setting up permissions.\n"
@@ -102,13 +102,15 @@ else
     curl -fsSL --create-dirs -o ~/.zim/zimfw.zsh \
       https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
   fi
-  echo -e "${WARNING}Creating backups of your existing shell config files in {$CYAN}${HOME}${RESET} ending with ${CYAN}.bak${RESET}"
-  sudo mv $HOME/.zshrc $HOME/.zshrc.bak
-  mv $HOME/.zim $HOME/.zim.bak
-  mv $HOME/.zimrc $HOME/.zimrc.bak
+  echo -e "${WARNING}Creating backups of your existing shell config files in {$CYAN}${HOME}${RESET} ending with ${CYAN}.bak${RESET}\n${WARNING}Deleting potential old backups in 3 seconds.."
+  sleep 3
+  rm -rf "${HOME}/.zshrc.bak" "${HOME}/.zim.bak" "${HOME}/.zimrc.bak"
+  mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
+  mv "${HOME}/.zim" "${HOME}/.zim.bak"
+  mv "${HOME}/.zimrc" "${HOME}/.zimrc.bak"
 
   echo debugtest
-  cp -r ./.z* ${HOME}
+  cp -r ./.z* "${HOME}"
 fi
 
 function hyprland() {
@@ -127,15 +129,15 @@ function hyprland() {
 }
 hyprland
 
-if [[ ! $installoptions == *"lazyvim"* ]]; then
+if [[ ! $installOptions == *"lazyvim"* ]]; then
   lazyvim=""
 else
   echo -e "${NOTE}LazyVim will be installed.\n"
 fi
 
-$helper -Sy --noconfirm --needed zsh $hyprland $dotfiles $lazyvim $zsh
+$helper -Sy --noconfirm --needed "$hyprland $dotfiles $lazyvim $zsh"
 
-if [[ ! $installoptions == *"lazyvim"* ]]; then
+if [[ ! $installOptions == *"lazyvim"* ]]; then
   echo -e "${NOTE}Installing LazyVim.\n"
   git clone https://github.com/LazyVim/starter ~/.config/nvim
   #if [[ ! $? = 1 ]]; then
