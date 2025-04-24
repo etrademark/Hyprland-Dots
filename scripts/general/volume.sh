@@ -1,7 +1,5 @@
 #!/bin/bash
 
-arg1=$1
-
 if [[ $3 == "mic" ]]; then
   object="source"
   object2="SOURCE"
@@ -14,20 +12,25 @@ fi
 
 function get_volume() {
   volume=$(pactl get-$object-volume @DEFAULT_$object2@ | grep -oP '\d+(?=%)' | head -n 1)
-  if [[ $arg1 == "toggle" ]]; then
-    muted=$(pactl get-$object-mute @DEFAULT_$object2@ | grep -oP '(?<=Mute: ).*')
-    if [[ $muted == "yes" ]]; then
-      muted="Muted."
-    else
-      muted="Unmuted."
-    fi
+  icon=$(pactl get-$object-mute @DEFAULT_$object2@ | grep -oP '(?<=Mute: ).*')
+
+  if [ $icon == "yes" ]; then
+    icon="🔇"
+  elif [ $volume -gt 100 ]; then
+    icon="📢"
+  elif [ $volume -ge 70 ]; then
+    icon="🔊"
+  elif [ $volume -ge 40 ]; then
+    icon="🔉"
+  elif [ $volume -gt 0 ]; then
+    icon="🔈"
   else
-    muted=""
+    icon="🔇"
   fi
 }
 
 function notify() {
-  notify-send -h string:x-canonical-private-synchronous:volume_notif "${thing} volume: ${volume}%" "${muted}" -h int:value:"${volume}" -e
+  notify-send -h string:x-canonical-private-synchronous:volume_notif "${thing} volume: ${volume}%" "${icon}" -h int:value:"${volume}" -e
 }
 
 case "${1}" in
