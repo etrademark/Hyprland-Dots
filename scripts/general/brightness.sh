@@ -19,4 +19,4 @@ case $1 in
 esac
 
 get_brightness
-notify-send -h string:x-canonical-private-synchronous:volume_notif "Brightness set to ${brightness}%" -e -h int:value:"${brightness}" -u critical
+notify-send -h string:x-canonical-private-synchronous:volume_notif "Brightness set to ${brightness}%" -e -h int:value:"${brightness}" -u low

@@ -30,7 +30,7 @@ function get_volume() {
 }
 
 function notify() {
-  notify-send -h string:x-canonical-private-synchronous:volume_notif "${thing} volume: ${volume}%" "${icon}" -h int:value:"${volume}" -e
+  notify-send -h string:x-canonical-private-synchronous:volume_notif "${thing} volume: ${volume}%" "${icon}" -h int:value:"${volume}" -e -u low
 }
 
 case "${1}" in

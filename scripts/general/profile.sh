@@ -10,4 +10,4 @@ elif [ $profile == "balanced" ]; then
 elif [ $profile == "performance" ]; then
   profileNumber=100
 else profileNumber=0; fi
-notify-send -h string:x-canonical-private-synchronous:volume_notif "Changed profile to ${profile}" -e -h int:value:$profileNumber -u critical
+notify-send -h string:x-canonical-private-synchronous:volume_notif "Changed profile to ${profile}" -e -h int:value:$profileNumber -u low
