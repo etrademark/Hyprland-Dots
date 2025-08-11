@@ -1,0 +1,111 @@
+{
+  "layer": "top",
+  "modules-left": [
+    "tray",
+    "hyprland/window"
+  ],
+  "modules-center": [
+    "hyprland/workspaces",
+    "temperature"
+  ],
+  "modules-right": [
+    "battery",
+    "wireplumber",
+    "custom/notification",
+    "clock",
+    "custom/power"
+  ],
+  "hyprland/window": {
+    "format": "{title}",
+    "max-length": 50
+  },
+  "hyprland/workspaces": {
+    "format": "{icon}{windows}",
+    "format-icons": {
+      //"default": "● ",
+      "empty": "●"
+    },
+    "window-rewrite-default": "",
+    "window-rewrite": {
+      "title<.*youtube.*>": " ",
+      "class<chrome|chromium>": " ",
+      "class<opera|opera-mini|opera-developer>": " ",
+      "class<(firefox|firefox-developer-edition|firefox-beta|floorp|librewolf)>": " ",
+      "class<brave>": " ",
+      "class<discord|vesktop|webcord>": " ",
+      "class<steam>": " ",
+      "class<spotify>": " ",
+      "class<supertux.*>": " ",
+      "class<minecraft.*|prismlauncher|atlauncher>": " 󰍳",
+      "title<minecraft.*>": " 󰍳",
+      "title<.*github.*>": " ",
+      "kitty": " ",
+      "title<nvim.*>": " ",
+      "title<vi.*>": " ",
+      "title<.*emacs.*": " ",
+      "code": " 󰨞",
+      "Hyprland Polkit Agent*": " 󰀇"
+    },
+    "on-scroll-down": "hyprctl dispatch workspace r-1",
+    "on-scroll-up": "hyprctl dispatch workspace r+1",
+    "persistent-workspaces": {
+      "*": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  },
+  "temperature": {
+    "critical-threshold": 75,
+    "format-critical": "{temperatureC}°C ",
+    "format": "{temperatureC}°C ",
+    "tooltip": "Open resource manager",
+    "on-click": "kitty btop"
+  },
+  "battery": {
+    "format": "{capacity}% {icon}",
+    "format-icons": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "wireplumber": {
+    "format": "{volume}%",
+    "on-click": "wpctl set-mute @DEFAULT_SINK@ toggle",
+    "on-click-right": "pavucontrol"
+  },
+  "clock": {
+    "format-alt": "{:%a, %d. %b  %H:%M}"
+  },
+  "custom/power": {
+    "format": "",
+    "on-click": "${HOME}/.config/hypr/scripts/wofi/power_menu.sh",
+    "tooltip": "Power Menu"
+  },
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{} {icon}",
+    "format-icons": {
+      "notification": "<span foreground='red'><sup></sup></span>",
+      "none": "",
+      "dnd-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-none": "",
+      "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  }
+}
