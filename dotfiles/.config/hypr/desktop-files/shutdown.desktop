@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Shutdown
+Comment=Power off
+Exec=shutdown 0
+Icon=system-shutdown
+Type=Application
+Categories=System;
